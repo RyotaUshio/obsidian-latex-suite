@@ -4,7 +4,7 @@ import { EditorState, Extension } from "@codemirror/state";
 import { basicSetup } from "./ui/snippets_editor/extensions";
 import LatexSuitePlugin from "../main";
 import { FileSuggest } from "./ui/file_suggest";
-import { DEFAULT_SETTINGS } from "./settings";
+import { DEFAULT_SETTINGS, LatexSuitePluginSettings } from "./settings";
 import { DEFAULT_SNIPPETS } from "src/utils/default_snippets";
 import { parseSnippets } from "src/snippets/parse_snippets";
 import { getSnippetVariables } from "src/snippets/snippet_variables";
@@ -273,6 +273,41 @@ export class LatexSuiteSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
+		new Setting(containerEl)
+			.setName("Mode")
+			.setDesc(createFragment((el) => {
+				el.appendText('How the matrix shortcuts should behave.');
+
+				el.createEl('dl', {}, (dl) => {
+					dl.createEl('dt', { text: 'Original' });
+					dl.createEl('dl', {}, (dl) => {
+						dl.createEl('ul', {}, (ul) => {
+							ul.createEl('li', { text: 'Press Tab to insert the "&" symbol' });
+							ul.createEl('li', { text: 'Press insert to "\\" and move to a new line' });
+							ul.createEl('li', { text: 'Press Shift + Enter to move to the end of the next line (can be used to exit the matrix)' });
+						})
+					});
+
+					dl.createEl('dt', { text: 'Alternative' });
+					dl.createEl('dl', {}, (dl) => {
+						dl.createEl('ul', {}, (ul) => {
+							ul.createEl('li', { text: 'Press Tab to move to the end of the next line (can be used to exit the matrix)' });
+							ul.createEl('li', { text: 'Press Enter to insert "\\" and move to a new line' });
+							ul.createEl('li', { text: 'Press Shift + Enter to move to a new line without inserting "\\"' });
+						})
+					});
+				});
+			}))
+			.addDropdown(dropdown => dropdown
+				.addOptions({
+					'original': 'Original',
+					'alternative': 'Alternative'
+				})
+				.setValue(this.plugin.settings.matrixShortcutsMode)
+				.onChange(async (value: LatexSuitePluginSettings['matrixShortcutsMode']) => {
+					this.plugin.settings.matrixShortcutsMode = value;
+					await this.plugin.saveSettings();
+				}));
 
 		new Setting(containerEl)
 			.setName("Environments")
