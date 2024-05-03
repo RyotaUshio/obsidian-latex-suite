@@ -22,10 +22,12 @@ import { colorPairedBracketsPluginLowestPrec, highlightCursorBracketsPlugin } fr
 import { cursorTooltipBaseTheme, cursorTooltipField, handleMathTooltip } from "./editor_extensions/math_tooltip";
 import { isComposing } from "./utils/editor_utils";
 
-export const handleUpdate = (update: ViewUpdate) => {
-	// The math tooltip handler is driven by view updates because it utilizes
-	// information about visual line, which is not available in EditorState
-	handleMathTooltip(update);
+export const handleUpdate = (update: ViewUpdate, settings: LatexSuiteCMSettings) => {
+	if (settings.mathPreviewEnabled) {
+		// The math tooltip handler is driven by view updates because it utilizes
+		// information about visual line, which is not available in EditorState
+		handleMathTooltip(update);	
+	}
 
 	const cursorTriggeredByChange = update.state.field(cursorTriggerStateField, false);
 
@@ -58,7 +60,7 @@ export const handleKeydown = (key: string, shiftKey: boolean, ctrlKey: boolean, 
 
 		// Prevent IME from triggering keydown events.
 		if (settings.suppressSnippetTriggerOnIME && isIME) return;
-	
+
 		// Allows Ctrl + z for undo, instead of triggering a snippet ending with z
 		if (!ctrlKey) {
 			try {
@@ -120,7 +122,7 @@ export const handleTabstops = (view: EditorView) =>
 export const latexSuiteExtensions = (settings: LatexSuiteCMSettings) => [
 	getLatexSuiteConfigExtension(settings),
 	Prec.highest(EditorView.domEventHandlers({"keydown": onKeydown})), // Register keymaps
-	EditorView.updateListener.of(handleUpdate),
+	EditorView.updateListener.of((update) => handleUpdate(update, settings)),
 	snippetExtensions
 ];
 
